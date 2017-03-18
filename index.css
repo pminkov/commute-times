@@ -1,13 +1,11 @@
 /* Always set the map height explicitly to define the size of the div
  * element that contains the map. */
-#map {
+html, body, #main-grid {
   height: 100%;
 }
+
 /* Optional: Makes the sample page fill the window. */
 html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
   font-family: 'Roboto','sans-serif';
 }
 
@@ -26,22 +24,26 @@ html, body {
 
 #right-panel {
   line-height: 30px;
-  padding-left: 10px;
-}
-
-#right-panel {
-  height: 100%;
-  float: right;
-  width: 410px;
-  overflow: auto;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 #map {
-  margin-right: 400px;
+  height:300px;
 }
 
+@media screen and (min-width:48em) {
+  #map {
+    height:100%;
+  }
+}
+
+
 #times {
+  width:100%;
   text-align: center;
+  border-collapse: separate;
+  border-spacing:2px;
 }
 
 #times .time_slot {
@@ -86,13 +88,3 @@ html, body {
   display: none;
 }
 
-@media print {
-  #map {
-    height: 500px;
-    margin: 0;
-  }
-  #right-panel {
-    float: none;
-    width: auto;
-  }
-}

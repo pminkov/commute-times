@@ -7,6 +7,9 @@
     <link rel="stylesheet" type="text/css"
           href="https://fonts.googleapis.com/css?family=Roboto">
     <link rel="stylesheet" type="text/css" href="index.css">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.2/build/pure-min.css">
+    <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.2/build/grids-responsive-min.css">
+
   </head>
   <body>
     <div id="floating-panel">
@@ -30,20 +33,26 @@
         Couldn't find route between A and B.
       </div>
     </div>
-    <div id="right-panel">
-      <div>
-        <table id="times">
-          <tr>
-            <td>Leave at</td>
-            <td>A to B</td>
-            <td>B to A</td>
-          </tr>
-        </table>
+
+    <div class="pure-g" id="main-grid">
+      <div class="pure-u-1-1 pure-u-md-3-5" id="map">
       </div>
-    
+      <div class="pure-u-1-1 pure-u-md-2-5">
+        <div id="right-panel">
+          <div>
+            <table id="times">
+              <tr>
+                <td>Leave at</td>
+                <td>A to B</td>
+                <td>B to A</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
-    <div id="map"></div>
   
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="commute-time.js"></script>
     <script async defer 
