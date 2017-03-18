@@ -54,12 +54,10 @@ function ThrottledBatch()  {
   var per_second = 2;
   this.wait_time = 1.0 / per_second * 1000.0;
   this.batch = [];
-  this.done = [];
 }
 
 ThrottledBatch.prototype.addRequest = function(func) {
   this.batch.push(func);
-  this.done.push(false);
 }
 
 ThrottledBatch.prototype.executeOne = function(index) {
@@ -103,7 +101,7 @@ function showDrivingTimes(directionsService, directionsDisplay) {
 
   var modes = ['ab', 'ba'];
 
-  var is_displayed = false;
+  var route_displayed = false;
 
   hour_lim = 24;
 
@@ -128,13 +126,13 @@ function showDrivingTimes(directionsService, directionsDisplay) {
     }
 
     for (var hour = hour_from; hour <= hour_to; hour++) {
-      var d = new Date();
-      var adjust = -(d.getDay() - 1);
-      d.setDate(d.getDate() + 7 + adjust);
+      var departureDate = new Date();
+      var adjust = -(departureDate.getDay() - 1);
+      departureDate.setDate(departureDate.getDate() + 7 + adjust);
 
-      console.assert(d.getDay() == 1);
+      console.assert(departureDate.getDay() == 1);
 
-      d.setHours(hour);
+      departureDate.setHours(hour);
 
       var mystart, myend;
       if (mode == 'ab') {
@@ -149,7 +147,7 @@ function showDrivingTimes(directionsService, directionsDisplay) {
         destination: myend,
         travelMode: 'DRIVING',
         drivingOptions: {
-          departureTime: d,
+          departureTime: departureDate,
           trafficModel: 'pessimistic'
         }
       };
@@ -174,8 +172,8 @@ function showDrivingTimes(directionsService, directionsDisplay) {
 
             $('#time-' + myParams.hour + selector).text(leg.duration_in_traffic.text);
 
-            if (!is_displayed) {
-              is_displayed = true;
+            if (!route_displayed) {
+              route_displayed = true;
               directionsDisplay.setDirections(response);
             }
           }
