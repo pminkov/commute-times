@@ -51,7 +51,7 @@ function initTable() {
 }
 
 function ThrottledBatch()  {
-  var per_second = 2;
+  var per_second = 4;
   this.wait_time = 1.0 / per_second * 1000.0;
   this.batch = [];
 }
@@ -74,13 +74,13 @@ ThrottledBatch.prototype.executeOne = function(index) {
         setTimeout(function() {
           me.executeOne(index + 1);
         }, me.wait_time);
-      } else if (status == 'ZERO_RESULTS' || status == 'NOT_FOUND') {
-        $('#noroute').show();
-      } else {
+      } else if (status == 'OVER_QUERY_LIMIT') {
         console.log('Oops, waiting..');
         setTimeout(function() {
           me.executeOne(index);
         }, 1000);
+      } else {
+        $('#noroute').show();
       }
     });
   }
@@ -163,18 +163,20 @@ function showDrivingTimes(directionsService, directionsDisplay) {
             if (response.routes.length > 0) {
               var route = response.routes[0];
               var leg = route.legs[0];
-            }
 
-            var selector = ' .slot_ab';
-            if (myParams.mode == 'ba') {
-              selector = ' .slot_ba';
-            }
+              var selector = ' .slot_ab';
+              if (myParams.mode == 'ba') {
+                selector = ' .slot_ba';
+              }
 
-            $('#time-' + myParams.hour + selector).text(leg.duration_in_traffic.text);
+              if (leg && leg.duration_in_traffic) {
+                $('#time-' + myParams.hour + selector).text(leg.duration_in_traffic.text);
+              } 
 
-            if (!route_displayed) {
-              route_displayed = true;
-              directionsDisplay.setDirections(response);
+              if (!route_displayed) {
+                route_displayed = true;
+                directionsDisplay.setDirections(response);
+              }
             }
           }
 
