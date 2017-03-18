@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Displaying text directions with <code>setPanel()</code></title>
+    <link rel="stylesheet" type="text/css"
+          href="https://fonts.googleapis.com/css?family=Roboto">
+    <link rel="stylesheet" type="text/css" href="index.css">
+  </head>
+  <body>
+    <div id="floating-panel">
+      <div id=title>
+        Commute Time Calculator
+      </div>
+      <div>
+        <span>
+          A:
+        </span>
+        <input id="address-from" value="Jack London Square, Oakland, CA">
+      </div>
+      <div>
+        <span>
+          B:
+        </span>
+        <input id="address-to" value="Union Square, San Francisco, CA">
+      </div>
+      <button id="go">Go!</button>
+      <div id=noroute>
+        Couldn't find route between A and B.
+      </div>
+    </div>
+    <div id="right-panel">
+      <div>
+        <table id="times">
+          <tr>
+            <td>Leave at</td>
+            <td>A to B</td>
+            <td>B to A</td>
+          </tr>
+        </table>
+      </div>
+    
+    </div>
+    <div id="map"></div>
+  
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="commute-time.js"></script>
+    <script async defer 
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtDFC3VLvbxSFJ-8tAWIFhVipSdH81Eio&callback=initMap"></script>
+  </body>
+</html>

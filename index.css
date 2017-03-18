@@ -1,0 +1,98 @@
+/* Always set the map height explicitly to define the size of the div
+ * element that contains the map. */
+#map {
+  height: 100%;
+}
+/* Optional: Makes the sample page fill the window. */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto','sans-serif';
+}
+
+#floating-panel {
+  position: absolute;
+  top: 10px;
+  left: 25%;
+  z-index: 5;
+  background-color: #fff;
+  padding: 5px;
+  border: 1px solid #999;
+  text-align: center;
+  line-height: 30px;
+  padding-left: 10px;
+}
+
+#right-panel {
+  line-height: 30px;
+  padding-left: 10px;
+}
+
+#right-panel {
+  height: 100%;
+  float: right;
+  width: 410px;
+  overflow: auto;
+}
+
+#map {
+  margin-right: 400px;
+}
+
+#times {
+  text-align: center;
+}
+
+#times .time_slot {
+  width:9em;
+  background-color:#ddd;
+}
+
+#times .used_time {
+  width:5em;
+  text-align:center;
+  background-color:#eee;
+}
+
+#floating-panel, #floating-panel input, #floating-panel button {
+  font-size:15px;
+}
+
+#floating-panel #title {
+  font-size:18px;
+  margin-bottom:1em;
+  background:#eee;
+  border-radius: 4px;
+  padding:4px;
+}
+
+#noroute {
+  color:red;
+  display:none;
+}
+
+#floating-panel input {
+  padding:4px;
+  margin: 4px;
+  width:20em;
+}
+
+#floating-panel {
+  background: #fff;
+  padding: 10px;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 2px rgba(33, 33, 33, 0.4);
+  display: none;
+}
+
+@media print {
+  #map {
+    height: 500px;
+    margin: 0;
+  }
+  #right-panel {
+    float: none;
+    width: auto;
+  }
+}
