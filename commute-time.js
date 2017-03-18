@@ -8,9 +8,18 @@ function initMap() {
   initApp(map);
 }
 
+function showNoRoute() {
+  $('#noroute').show();
+}
+
+function hideNoRoute() {
+  $('#noroute').hide();
+}
+
 function initApp(map) {
   var directionsDisplay = new google.maps.DirectionsRenderer;
   var directionsService = new google.maps.DirectionsService;
+  var geocoder = new google.maps.Geocoder;
 
   directionsDisplay.setMap(map);
 
@@ -21,7 +30,7 @@ function initApp(map) {
   initTable();
 
   var startShow = function() {
-    showDrivingTimes(directionsService, directionsDisplay);
+    showDrivingTimes(geocoder, directionsService, directionsDisplay);
   }
 
   var handleEnter = function(e) {
@@ -80,7 +89,7 @@ ThrottledBatch.prototype.executeOne = function(index) {
           me.executeOne(index);
         }, 1000);
       } else {
-        $('#noroute').show();
+        showNoRoute();
       }
     });
   }
@@ -92,100 +101,147 @@ ThrottledBatch.prototype.execute = function() {
   this.executeOne(0);
 }
 
-function showDrivingTimes(directionsService, directionsDisplay) {
-  $('#noroute').hide();
+function lookupTimeZone(geocoder, location_name, callback) {
+  console.log('Looking up');
+  geocoder.geocode( { address: location_name }, function(results, status) {
+    if (status == 'OK') {
+      var position = results[0].geometry.location;
+
+      // Lookup timezone.
+      var params = {
+        location: position.lat() + "," + position.lng(),
+        key: "AIzaSyAtDFC3VLvbxSFJ-8tAWIFhVipSdH81Eio",
+        timestamp: new Date().getTime() / 1000.0
+      }
+
+      var url= "https://maps.googleapis.com/maps/api/timezone/json?" + $.param(params);
+      console.log(url);
+      $.ajax(url).done(function(data) {
+        callback(data);
+      });
+    } else {
+      showNoRoute();
+    }
+  });
+}
+
+function showDrivingTimes(geocoder, directionsService, directionsDisplay) {
+  hideNoRoute();
   var start = $('#address-from').val();
   var end = $('#address-to').val();
 
-  var batch = new ThrottledBatch();
+  var printed_tz_debug = false;
 
-  var modes = ['ab', 'ba'];
+  lookupTimeZone(geocoder, start, function(tz_data) {
+    console.log(tz_data);
+    var tz_offset_hours = (tz_data.dstOffset + tz_data.rawOffset) / 3600.0;
 
-  var route_displayed = false;
+    var batch = new ThrottledBatch();
 
-  hour_lim = 24;
+    var modes = ['ab', 'ba'];
+    var route_displayed = false;
 
-  for (var hour = 0; hour < hour_lim; hour++) {
-    $('#time-' + hour + ' .slot_ab').text('');
-    $('#time-' + hour + ' .slot_ba').text('');
-  }
+    hour_lim = 24;
 
-  for (var mode_i = 0; mode_i < modes.length; mode_i++) {
-    mode = modes[mode_i];
-
-    var hour_from;
-    var hour_to;
-    if (mode == 'ab') {
-      hour_from = 6;
-      hour_to = 12;
+    for (var hour = 0; hour < hour_lim; hour++) {
+      $('#time-' + hour + ' .slot_ab').text('');
+      $('#time-' + hour + ' .slot_ba').text('');
     }
 
-    if (mode == 'ba') {
-      hour_from = 15;
-      hour_to = 22;
-    }
+    for (var mode_i = 0; mode_i < modes.length; mode_i++) {
+      mode = modes[mode_i];
 
-    for (var hour = hour_from; hour <= hour_to; hour++) {
-      var departureDate = new Date();
-      var adjust = -(departureDate.getDay() - 1);
-      departureDate.setDate(departureDate.getDate() + 7 + adjust);
-
-      console.assert(departureDate.getDay() == 1);
-
-      departureDate.setHours(hour);
-
-      var mystart, myend;
+      var hour_from;
+      var hour_to;
       if (mode == 'ab') {
-        mystart = start;
-        myend = end;
-      } else {
-        mystart = end;
-        myend = start;
+        hour_from = 6;
+        hour_to = 12;
       }
-      var params = {
-        origin: mystart,
-        destination: myend,
-        travelMode: 'DRIVING',
-        drivingOptions: {
-          departureTime: departureDate,
-          trafficModel: 'pessimistic'
+
+      if (mode == 'ba') {
+        hour_from = 15;
+        hour_to = 22;
+      }
+
+      for (var hour = hour_from; hour <= hour_to; hour++) {
+        var departureDate = new Date();
+        var adjust = -(departureDate.getDay() - 1);
+        // Monday next week.
+        departureDate.setSeconds(0);
+        departureDate.setMinutes(0);
+        departureDate.setDate(departureDate.getDate() + 7 + adjust);
+
+        console.assert(departureDate.getDay() == 1);
+        var local_timezone_offset = departureDate.getTimezoneOffset() / 60.0;
+
+        var tz_hour_adjust = tz_offset_hours + local_timezone_offset;
+
+        departureDate.setHours(hour - tz_hour_adjust);
+
+        if (!printed_tz_debug) {
+          printed_tz_debug = true;
+          console.log('Timezone Debug:');
+          console.log('  Query timezone offset: ', tz_offset_hours);
+          console.log('  Local timezone offset: ', local_timezone_offset);
+          console.log('  Hour adjust - subtracting ' + tz_hour_adjust + ' hours.');
+          console.log('  Monday, ' + hour_from + 'am (target) is the same as following local time:');
+          console.log('  ' + departureDate);
         }
-      };
 
-      var myParams = {
-        hour: hour,
-        mode: mode
-      }
+        var mystart, myend;
+        if (mode == 'ab') {
+          mystart = start;
+          myend = end;
+        } else {
+          mystart = end;
+          myend = start;
+        }
+        var params = {
+          origin: mystart,
+          destination: myend,
+          travelMode: 'DRIVING',
+          drivingOptions: {
+            departureTime: departureDate,
+            trafficModel: 'pessimistic'
+          }
+        };
 
-      batch.addRequest(function(params, myParams, done_callback) {
-        directionsService.route(params, function(myParams, response, status) {
-          if (status === 'OK') {
-            if (response.routes.length > 0) {
-              var route = response.routes[0];
-              var leg = route.legs[0];
+        var myParams = {
+          hour: hour,
+          mode: mode
+        }
 
-              var selector = ' .slot_ab';
-              if (myParams.mode == 'ba') {
-                selector = ' .slot_ba';
-              }
+        batch.addRequest(function(params, myParams, done_callback) {
+          directionsService.route(params, function(myParams, response, status) {
+            if (status === 'OK') {
+              if (response.routes.length > 0) {
+                var route = response.routes[0];
+                var leg = route.legs[0];
 
-              if (leg && leg.duration_in_traffic) {
-                $('#time-' + myParams.hour + selector).text(leg.duration_in_traffic.text);
-              } 
+                var selector = ' .slot_ab';
+                if (myParams.mode == 'ba') {
+                  selector = ' .slot_ba';
+                }
 
-              if (!route_displayed) {
-                route_displayed = true;
-                directionsDisplay.setDirections(response);
+                if (leg && leg.duration_in_traffic) {
+                  $('#time-' + myParams.hour + selector).text(leg.duration_in_traffic.text);
+                } 
+
+                if (!route_displayed) {
+                  route_displayed = true;
+                  directionsDisplay.setDirections(response);
+                }
               }
             }
-          }
 
-          done_callback(status);
+            done_callback(status);
 
-        }.bind(this, myParams));
-      }.bind(this, params, myParams));
+          }.bind(this, myParams));
+        }.bind(this, params, myParams));
+      }
     }
-  }
+    batch.execute();
+  });
 
-  batch.execute();
+
 }
