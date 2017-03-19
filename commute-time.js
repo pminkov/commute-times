@@ -1,11 +1,37 @@
-function initMap() {
-  var map = new google.maps.Map(document.getElementById('map'), {
-      zoom: 11,
-      center: { lat: 37.779236, lng: -122.449621 },
-      mapTypeControl: false
-    });
+function App() {
+  this.map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 11,
+    center: { lat: 37.779236, lng: -122.449621 },
+    mapTypeControl: false
+  });
 
-  initApp(map);
+  this.directionsDisplay = new google.maps.DirectionsRenderer;
+  this.directionsDisplay.setMap(this.map);
+
+  this.directionsService = new google.maps.DirectionsService;
+  this.geocoder = new google.maps.Geocoder;
+
+  var control = document.getElementById('floating-panel');
+  control.style.display = 'block';
+  this.map.controls[google.maps.ControlPosition.TOP_CENTER].push(control);
+
+  initTimeTable();
+
+  var queryTravelTimes = function() {
+    showDrivingTimes(this.geocoder, this.directionsService, this.directionsDisplay);
+  }.bind(this);
+
+  var handleEnter = function(e) {
+    if (e.keyCode == 13) {
+      queryTravelTimes();
+    }
+  }
+  $('input').keyup(handleEnter);
+  $('#go').click(queryTravelTimes);
+}
+
+function startApp() {
+  var app = new App();
 }
 
 function showNoRoute() {
@@ -16,33 +42,8 @@ function hideNoRoute() {
   $('#noroute').hide();
 }
 
-function initApp(map) {
-  var directionsDisplay = new google.maps.DirectionsRenderer;
-  var directionsService = new google.maps.DirectionsService;
-  var geocoder = new google.maps.Geocoder;
 
-  directionsDisplay.setMap(map);
-
-  var control = document.getElementById('floating-panel');
-  control.style.display = 'block';
-  map.controls[google.maps.ControlPosition.TOP_CENTER].push(control);
-
-  initTable();
-
-  var startShow = function() {
-    showDrivingTimes(geocoder, directionsService, directionsDisplay);
-  }
-
-  var handleEnter = function(e) {
-    if (e.keyCode == 13) {
-      startShow();
-    }
-  }
-  $('input').keyup(handleEnter);
-  $('#go').click(startShow);
-}
-
-function initTable() {
+function initTimeTable() {
   for (var t = 4; t < 24; t++) {
     var tt;
     if (t == 0) tt = '12am';
@@ -242,6 +243,4 @@ function showDrivingTimes(geocoder, directionsService, directionsDisplay) {
     }
     batch.execute();
   });
-
-
 }
