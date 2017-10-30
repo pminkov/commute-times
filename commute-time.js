@@ -111,7 +111,7 @@ function lookupTimeZone(geocoder, location_name, callback) {
       // Lookup timezone.
       var params = {
         location: position.lat() + "," + position.lng(),
-        key: "AIzaSyAtDFC3VLvbxSFJ-8tAWIFhVipSdH81Eio",
+        key: "AIzaSyCyqbUW-VapBGgdWQWXYon8QAyA_X7Mkr4",
         timestamp: new Date().getTime() / 1000.0
       }
 
