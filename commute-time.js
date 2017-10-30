@@ -131,6 +131,8 @@ function showDrivingTimes(geocoder, directionsService, directionsDisplay) {
   var start = $('#address-from').val();
   var end = $('#address-to').val();
 
+  heap.track('Search', {from: start, to: end});
+
   var printed_tz_debug = false;
 
   lookupTimeZone(geocoder, start, function(tz_data) {
